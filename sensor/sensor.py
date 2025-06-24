@@ -2,22 +2,37 @@ import requests
 import time
 import random
 import sys
+import socket
+import os
 
 COLETOR_URL = "http://coletor:5000/leitura"
+SENSOR_ID = socket.gethostname()
+TIPO_SENSOR = os.environ.get("TIPO_SENSOR", "temperatura").lower()
 
 def gerar_dado():
-    return {
-        "sensor_id": random.randint(1, 100),
-        "temperatura": round(random.uniform(20, 40), 2),
-        "umidade": round(random.uniform(40, 80), 2)
+    valor = {
+        "sensor_id": SENSOR_ID,
+        "tipo": TIPO_SENSOR
     }
+
+    if TIPO_SENSOR == "temperatura":
+        valor["valor"] = round(random.uniform(20, 40), 2)
+    elif TIPO_SENSOR == "umidade":
+        valor["valor"] = round(random.uniform(40, 80), 2)
+    elif TIPO_SENSOR == "vento":
+        valor["valor"] = round(random.uniform(0, 15), 2)  # m/s
+    else:
+        valor["valor"] = None
+
+    return valor
 
 while True:
     time.sleep(random.uniform(1, 3))
 
     if random.random() < 0.1:
-        print("Falha simulada no sensor!", file=sys.stderr)
+        print("⚠️ Falha simulada no sensor!", file=sys.stderr)
         raise Exception("Sensor falhou")
+        
 
     dado = gerar_dado()
     try:

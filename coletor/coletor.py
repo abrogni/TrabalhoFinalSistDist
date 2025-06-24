@@ -1,27 +1,42 @@
 from flask import Flask, request, jsonify, render_template_string
 import time
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
-leituras = []  # Lista para armazenar as últimas leituras
+leituras = {}  # sensor_id -> última leitura
 
 @app.route("/leitura", methods=["POST"])
 def receber_leitura():
     dados = request.json
-    agora = time.strftime("%H:%M:%S")
-    print(f"[{agora}] Leitura recebida: {dados}")
-    
-    dados["timestamp"] = agora
-    leituras.append(dados)
+    agora = datetime.now()
+    dados["timestamp"] = agora.strftime("%H:%M:%S")
+    dados["datetime"] = agora.isoformat()
+    sensor_id = dados.get("sensor_id", "desconhecido")
 
-    # Mantém só as 20 últimas
-    if len(leituras) > 20:
-        leituras.pop(0)
+    print(f"[{dados['timestamp']}] ✅ Leitura recebida: {dados}")
+    leituras[sensor_id] = dados
 
     return {"status": "ok"}
 
 @app.route("/dados")
 def dados():
-    return jsonify(leituras)
+    agora = datetime.now()
+    dados_atualizados = []
+    for sensor_id, dado in leituras.items():
+        ultimo_envio = datetime.fromisoformat(dado["datetime"])
+        ativo = (agora - ultimo_envio) < timedelta(seconds=10)
+        dado["ativo"] = ativo
+        dados_atualizados.append(dado)
+
+    # Ordena:
+    # 1. Ativos primeiro
+    # 2. Dentro dos ativos, ordena por tipo
+    dados_ordenados = sorted(
+        dados_atualizados,
+        key=lambda d: (not d["ativo"], d["tipo"])
+    )
+
+    return jsonify(dados_ordenados)
 
 @app.route("/painel")
 def painel():
@@ -33,9 +48,12 @@ def painel():
     <meta charset="UTF-8">
     <style>
         body { font-family: Arial; padding: 20px; background: #f4f4f4; }
-        table { border-collapse: collapse; width: 100%; background: white; }
+        table { border-collapse: collapse; width: 100%; background: white; margin-top: 20px; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
         th { background-color: #007BFF; color: white; }
+        h1 { color: #333; }
+        .ativo { background-color: #c8f7c5; }
+        .inativo { background-color: #f7c5c5; }
     </style>
 </head>
 <body>
@@ -45,8 +63,8 @@ def painel():
             <tr>
                 <th>Horário</th>
                 <th>Sensor ID</th>
-                <th>Temperatura (°C)</th>
-                <th>Umidade (%)</th>
+                <th>Tipo</th>
+                <th>Valor</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -58,12 +76,13 @@ def painel():
             const dados = await res.json();
             const tbody = document.querySelector("#tabela tbody");
             tbody.innerHTML = "";
-            dados.reverse().forEach(l => {
+            dados.forEach(l => {
+                const classe = l.ativo ? "ativo" : "inativo";
                 const linha = `<tr>
                     <td>${l.timestamp}</td>
-                    <td>${l.sensor_id}</td>
-                    <td>${l.temperatura}</td>
-                    <td>${l.umidade}</td>
+                    <td class="${classe}">${l.sensor_id}</td>
+                    <td>${l.tipo}</td>
+                    <td>${l.valor}</td>
                 </tr>`;
                 tbody.innerHTML += linha;
             });
