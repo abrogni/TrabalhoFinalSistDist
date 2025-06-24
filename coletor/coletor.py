@@ -13,7 +13,6 @@ def receber_leitura():
     dados["datetime"] = agora.isoformat()
     sensor_id = dados.get("sensor_id", "desconhecido")
 
-    print(f"[{dados['timestamp']}] ✅ Leitura recebida: {dados}")
     leituras[sensor_id] = dados
 
     return {"status": "ok"}
@@ -24,13 +23,10 @@ def dados():
     dados_atualizados = []
     for sensor_id, dado in leituras.items():
         ultimo_envio = datetime.fromisoformat(dado["datetime"])
-        ativo = (agora - ultimo_envio) < timedelta(seconds=10)
+        ativo = (agora - ultimo_envio) < timedelta(seconds=5)
         dado["ativo"] = ativo
         dados_atualizados.append(dado)
 
-    # Ordena:
-    # 1. Ativos primeiro
-    # 2. Dentro dos ativos, ordena por tipo
     dados_ordenados = sorted(
         dados_atualizados,
         key=lambda d: (not d["ativo"], d["tipo"])
@@ -88,7 +84,7 @@ def painel():
             });
         }
 
-        setInterval(carregarDados, 2000);
+        setInterval(carregarDados, 1000);
         carregarDados();
     </script>
 </body>

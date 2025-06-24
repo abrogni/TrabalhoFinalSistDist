@@ -30,13 +30,11 @@ while True:
     time.sleep(random.uniform(1, 3))
 
     if random.random() < 0.1:
-        print("⚠️ Falha simulada no sensor!", file=sys.stderr)
         raise Exception("Sensor falhou")
         
 
     dado = gerar_dado()
     try:
         r = requests.post(COLETOR_URL, json=dado)
-        print(f"→ Enviado: {dado} | Status: {r.status_code}")
     except Exception as e:
         print(f"Erro ao enviar dado: {e}", file=sys.stderr)
