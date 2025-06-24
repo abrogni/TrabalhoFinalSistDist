@@ -1,0 +1,14 @@
+services:
+  coletor:
+    image: iot/coletor
+    ports:
+      - "5000:5000"
+    networks:
+      - iot
+
+  sensor:
+    image: iot/sensor
+    depends_on:
+      - coletor
+    networks:
+      - iot
