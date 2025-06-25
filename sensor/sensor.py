@@ -27,7 +27,7 @@ def gerar_dado():
     return valor
 
 while True:
-    time.sleep(random.uniform(1, 3))
+    time.sleep(1)
 
     if random.random() < 0.1:
         raise Exception("Sensor falhou")

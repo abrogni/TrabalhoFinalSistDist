@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pytz
 
 app = Flask(__name__)
-leituras = {}  # sensor_id -> última leitura
+leituras = {} 
 
 @app.route("/leitura", methods=["POST"])
 def receber_leitura():
