@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY coletor.py .
 
-RUN pip install flask
+RUN pip install flask pytz
+
 
 CMD ["python", "coletor.py"]

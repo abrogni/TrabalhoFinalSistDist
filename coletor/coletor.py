@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template_string
 import time
 from datetime import datetime, timedelta
+import pytz
 
 app = Flask(__name__)
 leituras = {}  # sensor_id -> última leitura
@@ -8,7 +9,7 @@ leituras = {}  # sensor_id -> última leitura
 @app.route("/leitura", methods=["POST"])
 def receber_leitura():
     dados = request.json
-    agora = datetime.now()
+    agora = agora = datetime.now(pytz.timezone("America/Sao_Paulo"))
     dados["timestamp"] = agora.strftime("%H:%M:%S")
     dados["datetime"] = agora.isoformat()
     sensor_id = dados.get("sensor_id", "desconhecido")
@@ -19,7 +20,7 @@ def receber_leitura():
 
 @app.route("/dados")
 def dados():
-    agora = datetime.now()
+    agora = datetime.now(pytz.timezone("America/Sao_Paulo"))
     dados_atualizados = []
     for sensor_id, dado in leituras.items():
         ultimo_envio = datetime.fromisoformat(dado["datetime"])

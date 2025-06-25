@@ -20,7 +20,7 @@ def gerar_dado():
     elif TIPO_SENSOR == "umidade":
         valor["valor"] = round(random.uniform(40, 80), 2)
     elif TIPO_SENSOR == "vento":
-        valor["valor"] = round(random.uniform(0, 15), 2)  # m/s
+        valor["valor"] = round(random.uniform(0, 15), 2)
     else:
         valor["valor"] = None
 
